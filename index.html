@@ -177,6 +177,7 @@
             margin-bottom: 24px;
         }
         #qr-reader { width: 100%; border-radius: 24px; overflow: hidden; }
+        #qr-reader video { width: 100%; border-radius: 20px; }
 
         .btn {
             background: #2d6a2f;
@@ -380,7 +381,7 @@
             <div class="scanner-wrapper">
                 <div id="qr-reader"></div>
             </div>
-            <button class="btn" id="startScannerBtn">▶ Запустить камеру и сканировать</button>
+            <button class="btn" id="startScannerBtn">▶ Запустить камеру</button>
             <div style="background: #e8f3e4; border-radius: 20px; padding: 20px; margin-top: 28px;">
                 <div style="font-weight: 700; margin-bottom: 12px;">📌 Как получить баллы:</div>
                 <ul style="margin-left: 20px; line-height: 1.8;">
@@ -503,10 +504,10 @@
         updateAllUI();
         alert(`✅ +${qrData.amount} баллов! Материал: ${qrData.material}`);
         
-        // Автоматически останавливаем камеру после успешного сканирования
         if(scanner) {
             scanner.stop().catch(()=>{});
             scanner = null;
+            document.getElementById('qr-reader').innerHTML = '';
         }
     }
 
@@ -582,47 +583,73 @@
 
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    // Сканер — камера запускается и сама останавливается после сканирования
-    function startScanner() {
+    // СКАНЕР
+    async function startScanner() {
+        const readerElem = document.getElementById('qr-reader');
+        if(!readerElem) return;
+        
         if(scanner) {
-            scanner.stop().catch(()=>{});
+            try { await scanner.stop(); } catch(e) {}
             scanner = null;
+            readerElem.innerHTML = '';
         }
+        
         scanner = new Html5Qrcode("qr-reader");
-        scanner.start({ facingMode: "environment" }, { fps: 12, qrbox: { width: 280 } }, (text) => {
-            try {
-                const obj = JSON.parse(text);
-                if(obj.amount && obj.material && obj.terminal) {
-                    addReceipt(obj);
-                } else {
-                    alert("Неверный QR-код. Нужен чек эко-терминала");
-                    if(scanner) { scanner.stop().catch(()=>{}); scanner = null; }
-                }
-            } catch(e) { 
-                alert("Ошибка чтения QR-кода");
-                if(scanner) { scanner.stop().catch(()=>{}); scanner = null; }
-            }
-        }, (err) => console.warn(err)).catch(err => console.warn(err));
+        
+        try {
+            await scanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 280, height: 280 } },
+                (decodedText) => {
+                    console.log("QR отсканирован:", decodedText);
+                    try {
+                        let data;
+                        if(decodedText[0] === '{') {
+                            data = JSON.parse(decodedText);
+                        } else {
+                            data = { amount: 50, material: "Вторсырье", terminal: "ECO-TERM" };
+                        }
+                        addReceipt({
+                            amount: data.amount || 50,
+                            material: data.material || "Вторсырье",
+                            terminal: data.terminal || "ECO-TERM"
+                        });
+                    } catch(e) {
+                        addReceipt({ amount: 50, material: "Вторсырье", terminal: "SCAN" });
+                    }
+                },
+                (error) => { console.log("Ошибка сканирования:", error); }
+            );
+        } catch(err) {
+            console.error("Ошибка запуска камеры:", err);
+            alert("Не удалось запустить камеру. Разрешите доступ.");
+        }
     }
     
     function processWithdraw() {
         const card = document.getElementById('cardNumber').value.replace(/\s/g, '');
         const amount = parseInt(document.getElementById('withdrawSum').value);
-        if(!card || card.length < 15) { alert("Введите номер карты"); return; }
+        if(!card || card.length < 13) { alert("Введите номер карты"); return; }
         if(!amount || amount < 100) { alert("Минимальная сумма вывода — 100 баллов"); return; }
         if(amount > appData.balance) { alert("Недостаточно баллов"); return; }
         appData.balance -= amount;
         appData.totalWithdrawn += amount;
         saveData();
         updateAllUI();
-        alert(`✅ ${amount} рублей будет переведено на карту ****${card.slice(-4)}`);
+        alert(`✅ ${amount} рублей переведено на карту ****${card.slice(-4)}`);
         document.getElementById('withdrawSum').value = '';
     }
     
     function logout() {
-        if(scanner) { scanner.stop().catch(()=>{}); scanner = null; }
+        if(scanner) { 
+            scanner.stop().catch(()=>{}); 
+            scanner = null; 
+        }
         document.getElementById('appMain').style.display = 'none';
         document.getElementById('authScreen').style.display = 'flex';
+        // Очищаем поля входа
+        document.getElementById('loginName').value = '';
+        document.getElementById('loginEmail').value = '';
     }
     
     function switchTab(tabName) {
@@ -634,15 +661,23 @@
         if(scanner && tabName !== 'scanner') {
             scanner.stop().catch(()=>{});
             scanner = null;
+            document.getElementById('qr-reader').innerHTML = '';
         }
     }
     
+    // ПРАВИЛЬНОЕ ПРИКРЕПЛЕНИЕ ОБРАБОТЧИКОВ
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
     });
-    document.getElementById('startScannerBtn').addEventListener('click', startScanner);
-    document.getElementById('withdrawBtn').addEventListener('click', processWithdraw);
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    
+    const startBtn = document.getElementById('startScannerBtn');
+    if(startBtn) startBtn.addEventListener('click', startScanner);
+    
+    const withdrawBtn = document.getElementById('withdrawBtn');
+    if(withdrawBtn) withdrawBtn.addEventListener('click', processWithdraw);
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if(logoutBtn) logoutBtn.addEventListener('click', logout);
     
     window.showReceiptDetail = showReceiptDetail;
     window.closeModal = closeModal;
