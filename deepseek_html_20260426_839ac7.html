@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>♻️ EcoTerminal — Зарабатывай на сортировке отходов</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e0efe0 0%, #c0ddb8 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a4a1c, #2d6a2f);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 48px;
+            padding: 48px 36px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.25);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-card .logo-icon { font-size: 64px; margin-bottom: 16px; }
+        .auth-card h2 { font-size: 32px; color: #2d6a2f; margin-bottom: 8px; }
+        .auth-card p { color: #7a9f7a; margin-bottom: 32px; }
+        .auth-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #d0e2c8;
+            border-radius: 60px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            transition: 0.2s;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #2d6a2f;
+            box-shadow: 0 0 0 3px rgba(45,106,47,0.1);
+        }
+        .auth-btn {
+            width: 100%;
+            background: #2d6a2f;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .auth-btn:hover { background: #1e4f20; transform: scale(0.98); }
+
+        .app-main {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none;
+        }
+
+        .top-panel {
+            background: white;
+            border-radius: 32px;
+            padding: 20px 32px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-area span { font-size: 32px; }
+        .logo-area h1 { font-size: 24px; color: #1a4a1c; }
+
+        .balance-badge {
+            background: linear-gradient(135deg, #2d6a2f, #1a4a1c);
+            padding: 12px 28px;
+            border-radius: 60px;
+            text-align: center;
+            color: white;
+        }
+        .balance-badge .label { font-size: 12px; opacity: 0.8; }
+        .balance-badge .value { font-size: 32px; font-weight: 800; line-height: 1; }
+
+        .tabs-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #5a7e4e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .tab-btn.active {
+            background: #2d6a2f;
+            color: white;
+            box-shadow: 0 6px 16px rgba(45,106,47,0.3);
+            transform: translateY(-2px);
+        }
+        .tab-btn:hover:not(.active) {
+            background: #e8f3e4;
+            transform: translateY(-1px);
+        }
+
+        .tab-pane { display: none; animation: fadeSlide 0.3s ease; }
+        .tab-pane.active { display: block; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #1a3b1a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .scanner-wrapper {
+            background: linear-gradient(145deg, #1a2a1a, #1f321f);
+            border-radius: 32px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        #qr-reader { width: 100%; border-radius: 24px; overflow: hidden; }
+
+        .btn {
+            background: #2d6a2f;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .btn:hover { background: #1e4f20; transform: scale(0.98); }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #2d6a2f, #4caf50);
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(45,106,47,0.3);
+        }
+        .profile-info h3 { font-size: 28px; color: #1a3b1a; }
+        .profile-info p { color: #7a9f7a; margin-top: 4px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+        .info-item {
+            background: #f0f8ec;
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+        }
+        .info-label { font-size: 13px; color: #7a9f7a; }
+        .info-value { font-size: 28px; font-weight: 800; color: #2d6a2f; }
+
+        .receipts-scroll { max-height: 500px; overflow-y: auto; }
+        .receipt-item {
+            background: #f9fff7;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-left: 5px solid #4caf50;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .receipt-item:hover { background: #f0fae8; transform: translateX(5px); }
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .receipt-amount { color: #2d6a2f; font-weight: 700; font-size: 18px; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #d0e2c8;
+            border-radius: 60px;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #2d6a2f;
+            box-shadow: 0 0 0 3px rgba(45,106,47,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: linear-gradient(145deg, #f0f8ec, #e8f3e4);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+        }
+        .stat-value { font-size: 36px; font-weight: 800; color: #2d6a2f; }
+
+        .progress-bar {
+            background: #cde0c5;
+            border-radius: 30px;
+            height: 12px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        .progress-fill { background: #2d6a2f; width: 0%; height: 100%; transition: width 0.4s; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            max-width: 400px;
+            width: 90%;
+            border-radius: 40px;
+            padding: 32px;
+        }
+        .flex-row { display: flex; justify-content: space-between; margin-bottom: 14px; }
+
+        @media (max-width: 700px) {
+            .app-main { padding: 16px; }
+            .top-panel { flex-direction: column; text-align: center; }
+            .profile-header { flex-direction: column; text-align: center; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .tab-btn { padding: 10px 20px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+        <div class="logo-icon">♻️</div>
+        <h2>EcoTerminal</h2>
+        <p>Зарабатывайте на сортировке отходов</p>
+        <input type="text" id="loginName" class="auth-input" placeholder="Ваше имя" value="Алексей">
+        <input type="email" id="loginEmail" class="auth-input" placeholder="Email" value="aleksey@eco.ru">
+        <button class="auth-btn" onclick="login()">🌱 Войти в профиль</button>
+    </div>
+</div>
+
+<div id="appMain" class="app-main">
+    <div class="top-panel">
+        <div class="logo-area">
+            <span>♻️</span>
+            <h1>EcoTerminal</h1>
+        </div>
+        <div class="balance-badge">
+            <div class="label">Мой баланс</div>
+            <div class="value" id="mainBalance">0</div>
+            <div style="font-size: 10px;">1 балл = 1 ₽</div>
+        </div>
+    </div>
+
+    <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="profile">👤 Профиль</button>
+        <button class="tab-btn" data-tab="scanner">📷 Сканер</button>
+        <button class="tab-btn" data-tab="receipts">🧾 Чеки</button>
+        <button class="tab-btn" data-tab="withdraw">💰 Вывод</button>
+        <button class="tab-btn" data-tab="stats">📊 Статистика</button>
+    </div>
+
+    <div id="tab-profile" class="tab-pane active">
+        <div class="card">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">🌱</div>
+                <div class="profile-info">
+                    <h3 id="profileName">Алексей</h3>
+                    <p id="profileEmail">aleksey@eco.ru</p>
+                    <p>🆔 <span id="profileId">ECO_</span></p>
+                </div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item"><div class="info-label">🌳 Спасено деревьев</div><div class="info-value" id="profileTrees">0</div></div>
+                <div class="info-item"><div class="info-label">💨 CO₂ сокращено</div><div class="info-value" id="profileCo2">0</div></div>
+                <div class="info-item"><div class="info-label">🏆 Уровень</div><div class="info-value" id="profileLevel">🌱</div></div>
+                <div class="info-item"><div class="info-label">💰 Всего заработано</div><div class="info-value" id="profileEarned">0</div></div>
+                <div class="info-item"><div class="info-label">💸 Выведено</div><div class="info-value" id="profileWithdrawn">0</div></div>
+                <div class="info-item"><div class="info-label">🎯 Прогресс</div><div class="info-value" id="profileProgress">0%</div></div>
+            </div>
+            <button class="btn" id="logoutBtn" style="background: #dc3545; margin-top: 24px;">🚪 Выйти из аккаунта</button>
+        </div>
+    </div>
+
+    <div id="tab-scanner" class="tab-pane">
+        <div class="card">
+            <div class="card-title">📷 Сканируйте QR-код с чека</div>
+            <div class="scanner-wrapper">
+                <div id="qr-reader"></div>
+            </div>
+            <button class="btn" id="startScannerBtn">▶ Запустить камеру и сканировать</button>
+            <div style="background: #e8f3e4; border-radius: 20px; padding: 20px; margin-top: 28px;">
+                <div style="font-weight: 700; margin-bottom: 12px;">📌 Как получить баллы:</div>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>Сдайте пластик, стекло, бумагу или алюминий в эко-терминал</li>
+                    <li>Получите чек с QR-кодом</li>
+                    <li>Нажмите «Запустить камеру» и отсканируйте QR</li>
+                    <li>Баллы моментально начислятся на баланс!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-receipts" class="tab-pane">
+        <div class="card">
+            <div class="card-title">🧾 История чеков</div>
+            <div id="receiptsList" class="receipts-scroll"><div style="text-align: center; padding: 40px;">Чеков пока нет</div></div>
+        </div>
+    </div>
+
+    <div id="tab-withdraw" class="tab-pane">
+        <div class="card">
+            <div class="card-title">💳 Вывод эко-баллов</div>
+            <div style="background: linear-gradient(145deg, #e8f3e4, #ddecd6); border-radius: 28px; padding: 24px; text-align: center; margin-bottom: 28px;">
+                <div style="font-size: 14px;">Доступно для вывода</div>
+                <div style="font-size: 48px; font-weight: 800; color: #2d6a2f;" id="withdrawBalance">0</div>
+                <div>эко-баллов = рублей</div>
+            </div>
+            <div class="input-group"><input type="text" id="cardNumber" placeholder="Номер карты" value="5555 3412 3456 1234"></div>
+            <div class="input-group"><input type="text" id="cardExpiry" placeholder="ММ/ГГ" value="12/28"></div>
+            <div class="input-group"><input type="text" id="cardCvv" placeholder="CVV" value="123"></div>
+            <div class="input-group"><input type="number" id="withdrawSum" placeholder="Сумма вывода (от 100 баллов)"></div>
+            <button class="btn" id="withdrawBtn" style="background: #2196F3;">💸 Вывести на карту</button>
+        </div>
+    </div>
+
+    <div id="tab-stats" class="tab-pane">
+        <div class="card">
+            <div class="card-title">📊 Экологическая статистика</div>
+            <div class="stats-grid">
+                <div class="stat-card"><div style="font-size: 40px;">🌳</div><div class="stat-value" id="statsTrees">0</div><div>деревьев спасено</div></div>
+                <div class="stat-card"><div style="font-size: 40px;">💨</div><div class="stat-value" id="statsCo2">0</div><div>кг CO₂ сокращено</div></div>
+                <div class="stat-card"><div style="font-size: 40px;">🏆</div><div class="stat-value" id="statsLevel">🌱</div><div>ваш уровень</div></div>
+            </div>
+            <div style="background: #f0f8ec; border-radius: 24px; padding: 24px;">
+                <div class="flex-row"><strong>💰 Всего заработано:</strong> <span id="statsTotalEarned">0</span> баллов</div>
+                <div class="flex-row"><strong>💸 Всего выведено:</strong> <span id="statsTotalWithdrawn">0</span> баллов</div>
+                <div class="flex-row"><strong>🎯 Текущий баланс:</strong> <span id="statsCurrentBalance">0</span> баллов</div>
+            </div>
+            <div style="margin-top: 24px;">
+                <div style="font-weight: 700;">📈 Прогресс к следующему уровню</div>
+                <div class="progress-bar"><div id="levelProgressFill" class="progress-fill"></div></div>
+                <div id="nextLevelText" style="font-size: 13px; margin-top: 8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="receiptModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 20px;">🧾 Детали чека</h3>
+        <div id="modalReceiptContent"></div>
+        <button class="btn" onclick="closeModal('receiptModal')" style="margin-top: 24px;">Закрыть</button>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    let appData = { balance: 0, totalEarned: 0, totalWithdrawn: 0, receipts: [] };
+    let scanner = null;
+
+    function login() {
+        const name = document.getElementById('loginName').value.trim();
+        const email = document.getElementById('loginEmail').value.trim();
+        if(!name || !email) { alert("Введите имя и email"); return; }
+        
+        const saved = localStorage.getItem(`eco_user_${email}`);
+        if(saved) {
+            const userData = JSON.parse(saved);
+            currentUser = { name, email, id: userData.id };
+            appData = userData;
+        } else {
+            currentUser = { name, email, id: 'ECO_' + Math.random().toString(36).substr(2, 12).toUpperCase() };
+            appData = { balance: 0, totalEarned: 0, totalWithdrawn: 0, receipts: [] };
+        }
+        
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appMain').style.display = 'block';
+        updateProfileUI();
+        updateAllUI();
+        saveData();
+    }
+
+    function saveData() {
+        if(currentUser) {
+            localStorage.setItem(`eco_user_${currentUser.email}`, JSON.stringify({ ...appData, id: currentUser.id }));
+        }
+    }
+
+    function updateProfileUI() {
+        if(!currentUser) return;
+        document.getElementById('profileName').innerText = currentUser.name;
+        document.getElementById('profileEmail').innerText = currentUser.email;
+        document.getElementById('profileId').innerText = currentUser.id;
+        document.getElementById('profileAvatar').innerHTML = currentUser.name.charAt(0).toUpperCase();
+    }
+
+    function addReceipt(qrData) {
+        const newReceipt = {
+            id: Date.now(),
+            date: new Date().toLocaleString('ru-RU'),
+            amount: qrData.amount,
+            material: qrData.material,
+            terminal: qrData.terminal,
+            weight: (Math.random() * 3 + 0.5).toFixed(1)
+        };
+        appData.receipts.unshift(newReceipt);
+        appData.balance += qrData.amount;
+        appData.totalEarned += qrData.amount;
+        saveData();
+        updateAllUI();
+        alert(`✅ +${qrData.amount} баллов! Материал: ${qrData.material}`);
+        
+        // Автоматически останавливаем камеру после успешного сканирования
+        if(scanner) {
+            scanner.stop().catch(()=>{});
+            scanner = null;
+        }
+    }
+
+    function updateAllUI() {
+        document.getElementById('mainBalance').innerText = appData.balance;
+        document.getElementById('withdrawBalance').innerText = appData.balance;
+        document.getElementById('statsCurrentBalance').innerText = appData.balance;
+        
+        const trees = Math.floor(appData.totalEarned / 18);
+        const co2 = Math.floor(appData.totalEarned / 9);
+        
+        document.getElementById('profileTrees').innerText = trees;
+        document.getElementById('profileCo2').innerText = co2;
+        document.getElementById('profileEarned').innerText = appData.totalEarned;
+        document.getElementById('profileWithdrawn').innerText = appData.totalWithdrawn;
+        
+        let level = '🌱 Новичок';
+        let progressPercent = Math.min(100, Math.floor((appData.totalEarned / 600) * 100));
+        if(appData.totalEarned >= 600) level = '⭐ Защитник';
+        if(appData.totalEarned >= 1800) level = '🏆 Мастер';
+        if(appData.totalEarned >= 3500) level = '💎 Легенда';
+        
+        document.getElementById('profileLevel').innerHTML = level;
+        document.getElementById('profileProgress').innerHTML = progressPercent + '%';
+        
+        document.getElementById('statsTrees').innerText = trees;
+        document.getElementById('statsCo2').innerText = co2;
+        document.getElementById('statsLevel').innerHTML = level;
+        document.getElementById('statsTotalEarned').innerText = appData.totalEarned;
+        document.getElementById('statsTotalWithdrawn').innerText = appData.totalWithdrawn;
+        
+        let prog = Math.min(100, (appData.totalEarned / 600) * 100);
+        if(appData.totalEarned >= 600) prog = Math.min(100, ((appData.totalEarned - 600) / 1200) * 100);
+        document.getElementById('levelProgressFill').style.width = prog + '%';
+        
+        let nextText = 'До уровня «Защитник»: ' + Math.max(0, 600 - appData.totalEarned) + ' баллов';
+        if(appData.totalEarned >= 600 && appData.totalEarned < 1800) nextText = 'До уровня «Мастер»: ' + (1800 - appData.totalEarned) + ' баллов';
+        if(appData.totalEarned >= 1800) nextText = 'Вы Мастер! До уровня «Легенда»: ' + Math.max(0, 3500 - appData.totalEarned) + ' баллов';
+        document.getElementById('nextLevelText').innerText = nextText;
+        
+        renderReceiptsList();
+    }
+
+    function renderReceiptsList() {
+        const container = document.getElementById('receiptsList');
+        if(appData.receipts.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #8aa87d;">🧾 Чеков пока нет</div>';
+            return;
+        }
+        container.innerHTML = appData.receipts.map(r => `
+            <div class="receipt-item" onclick="showReceiptDetail(${r.id})">
+                <div class="receipt-header">
+                    <span>📅 ${r.date.substring(0, 16)}</span>
+                    <span class="receipt-amount">+${r.amount} баллов</span>
+                </div>
+                <div style="font-size: 13px;">🏭 ${r.terminal} • 📦 ${r.material} • ⚖️ ${r.weight} кг</div>
+            </div>
+        `).join('');
+    }
+
+    function showReceiptDetail(id) {
+        const receipt = appData.receipts.find(r => r.id === id);
+        if(!receipt) return;
+        document.getElementById('modalReceiptContent').innerHTML = `
+            <div class="flex-row"><strong>📅 Дата:</strong> <span>${receipt.date}</span></div>
+            <div class="flex-row"><strong>🏭 Терминал:</strong> <span>${receipt.terminal}</span></div>
+            <div class="flex-row"><strong>📦 Материал:</strong> <span>${receipt.material}</span></div>
+            <div class="flex-row"><strong>⚖️ Вес:</strong> <span>${receipt.weight} кг</span></div>
+            <div class="flex-row"><strong>💰 Начислено:</strong> <span style="color:#2d6a2f; font-weight:bold;">+${receipt.amount} баллов</span></div>
+        `;
+        document.getElementById('receiptModal').classList.add('active');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // Сканер — камера запускается и сама останавливается после сканирования
+    function startScanner() {
+        if(scanner) {
+            scanner.stop().catch(()=>{});
+            scanner = null;
+        }
+        scanner = new Html5Qrcode("qr-reader");
+        scanner.start({ facingMode: "environment" }, { fps: 12, qrbox: { width: 280 } }, (text) => {
+            try {
+                const obj = JSON.parse(text);
+                if(obj.amount && obj.material && obj.terminal) {
+                    addReceipt(obj);
+                } else {
+                    alert("Неверный QR-код. Нужен чек эко-терминала");
+                    if(scanner) { scanner.stop().catch(()=>{}); scanner = null; }
+                }
+            } catch(e) { 
+                alert("Ошибка чтения QR-кода");
+                if(scanner) { scanner.stop().catch(()=>{}); scanner = null; }
+            }
+        }, (err) => console.warn(err)).catch(err => console.warn(err));
+    }
+    
+    function processWithdraw() {
+        const card = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        const amount = parseInt(document.getElementById('withdrawSum').value);
+        if(!card || card.length < 15) { alert("Введите номер карты"); return; }
+        if(!amount || amount < 100) { alert("Минимальная сумма вывода — 100 баллов"); return; }
+        if(amount > appData.balance) { alert("Недостаточно баллов"); return; }
+        appData.balance -= amount;
+        appData.totalWithdrawn += amount;
+        saveData();
+        updateAllUI();
+        alert(`✅ ${amount} рублей будет переведено на карту ****${card.slice(-4)}`);
+        document.getElementById('withdrawSum').value = '';
+    }
+    
+    function logout() {
+        if(scanner) { scanner.stop().catch(()=>{}); scanner = null; }
+        document.getElementById('appMain').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'flex';
+    }
+    
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        if(tabName === 'receipts') renderReceiptsList();
+        if(scanner && tabName !== 'scanner') {
+            scanner.stop().catch(()=>{});
+            scanner = null;
+        }
+    }
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+    });
+    document.getElementById('startScannerBtn').addEventListener('click', startScanner);
+    document.getElementById('withdrawBtn').addEventListener('click', processWithdraw);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    
+    window.showReceiptDetail = showReceiptDetail;
+    window.closeModal = closeModal;
+    window.login = login;
+</script>
+</body>
+</html>
