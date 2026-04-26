@@ -7,316 +7,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(145deg, #e0efe0 0%, #c0ddb8 100%);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
-
-        .auth-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a4a1c, #2d6a2f);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.4s ease;
-        }
-
-        .auth-card {
-            background: white;
-            border-radius: 48px;
-            padding: 48px 36px;
-            width: 90%;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 0 30px 50px rgba(0,0,0,0.25);
-            animation: fadeInUp 0.5s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(145deg, #e0efe0 0%, #c0ddb8 100%); font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a4a1c, #2d6a2f); z-index: 2000; display: flex; align-items: center; justify-content: center; transition: all 0.4s ease; }
+        .auth-card { background: white; border-radius: 48px; padding: 48px 36px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 30px 50px rgba(0,0,0,0.25); animation: fadeInUp 0.5s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .auth-card .logo-icon { font-size: 64px; margin-bottom: 16px; }
         .auth-card h2 { font-size: 32px; color: #2d6a2f; margin-bottom: 8px; }
         .auth-card p { color: #7a9f7a; margin-bottom: 32px; }
-        .auth-input {
-            width: 100%;
-            padding: 16px 20px;
-            border: 1px solid #d0e2c8;
-            border-radius: 60px;
-            font-size: 16px;
-            margin-bottom: 16px;
-            transition: 0.2s;
-        }
-        .auth-input:focus {
-            outline: none;
-            border-color: #2d6a2f;
-            box-shadow: 0 0 0 3px rgba(45,106,47,0.1);
-        }
-        .auth-btn {
-            width: 100%;
-            background: #2d6a2f;
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .auth-input { width: 100%; padding: 16px 20px; border: 1px solid #d0e2c8; border-radius: 60px; font-size: 16px; margin-bottom: 16px; transition: 0.2s; }
+        .auth-input:focus { outline: none; border-color: #2d6a2f; box-shadow: 0 0 0 3px rgba(45,106,47,0.1); }
+        .auth-btn { width: 100%; background: #2d6a2f; color: white; border: none; padding: 16px; border-radius: 60px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .auth-btn:hover { background: #1e4f20; transform: scale(0.98); }
-
-        .app-main {
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 20px;
-            display: none;
-        }
-
-        .top-panel {
-            background: white;
-            border-radius: 32px;
-            padding: 20px 32px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        }
-
+        .app-main { max-width: 1300px; margin: 0 auto; padding: 20px; display: none; }
+        .top-panel { background: white; border-radius: 32px; padding: 20px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
         .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-area span { font-size: 32px; }
         .logo-area h1 { font-size: 24px; color: #1a4a1c; }
-
-        .balance-badge {
-            background: linear-gradient(135deg, #2d6a2f, #1a4a1c);
-            padding: 12px 28px;
-            border-radius: 60px;
-            text-align: center;
-            color: white;
-        }
+        .balance-badge { background: linear-gradient(135deg, #2d6a2f, #1a4a1c); padding: 12px 28px; border-radius: 60px; text-align: center; color: white; }
         .balance-badge .label { font-size: 12px; opacity: 0.8; }
         .balance-badge .value { font-size: 32px; font-weight: 800; line-height: 1; }
-
-        .tabs-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #5a7e4e;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .tab-btn.active {
-            background: #2d6a2f;
-            color: white;
-            box-shadow: 0 6px 16px rgba(45,106,47,0.3);
-            transform: translateY(-2px);
-        }
-        .tab-btn:hover:not(.active) {
-            background: #e8f3e4;
-            transform: translateY(-1px);
-        }
-
+        .tabs-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+        .tab-btn { background: white; border: none; padding: 14px 32px; border-radius: 60px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; color: #5a7e4e; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .tab-btn.active { background: #2d6a2f; color: white; box-shadow: 0 6px 16px rgba(45,106,47,0.3); transform: translateY(-2px); }
+        .tab-btn:hover:not(.active) { background: #e8f3e4; transform: translateY(-1px); }
         .tab-pane { display: none; animation: fadeSlide 0.3s ease; }
         .tab-pane.active { display: block; }
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card {
-            background: white;
-            border-radius: 32px;
-            padding: 32px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-        }
-        .card-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 24px;
-            color: #1a3b1a;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .scanner-wrapper {
-            background: linear-gradient(145deg, #1a2a1a, #1f321f);
-            border-radius: 32px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: white; border-radius: 32px; padding: 32px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+        .card-title { font-size: 24px; font-weight: 700; margin-bottom: 24px; color: #1a3b1a; display: flex; align-items: center; gap: 12px; }
+        .scanner-wrapper { background: linear-gradient(145deg, #1a2a1a, #1f321f); border-radius: 32px; padding: 24px; margin-bottom: 24px; }
         #qr-reader { width: 100%; border-radius: 24px; overflow: hidden; }
         #qr-reader video { width: 100%; border-radius: 20px; }
-
-        .btn {
-            background: #2d6a2f;
-            color: white;
-            border: none;
-            padding: 16px 24px;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 18px;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
+        .btn { background: #2d6a2f; color: white; border: none; padding: 16px 24px; border-radius: 60px; font-weight: 700; font-size: 18px; cursor: pointer; transition: 0.2s; width: 100%; }
         .btn:hover { background: #1e4f20; transform: scale(0.98); }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #2d6a2f, #4caf50);
-            border-radius: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            color: white;
-            box-shadow: 0 8px 20px rgba(45,106,47,0.3);
-        }
+        .profile-header { display: flex; align-items: center; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
+        .profile-avatar { width: 100px; height: 100px; background: linear-gradient(135deg, #2d6a2f, #4caf50); border-radius: 60px; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white; box-shadow: 0 8px 20px rgba(45,106,47,0.3); }
         .profile-info h3 { font-size: 28px; color: #1a3b1a; }
         .profile-info p { color: #7a9f7a; margin-top: 4px; }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-        .info-item {
-            background: #f0f8ec;
-            border-radius: 24px;
-            padding: 20px;
-            text-align: center;
-        }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+        .info-item { background: #f0f8ec; border-radius: 24px; padding: 20px; text-align: center; }
         .info-label { font-size: 13px; color: #7a9f7a; }
         .info-value { font-size: 28px; font-weight: 800; color: #2d6a2f; }
-
         .receipts-scroll { max-height: 500px; overflow-y: auto; }
-        .receipt-item {
-            background: #f9fff7;
-            border-radius: 20px;
-            padding: 18px;
-            margin-bottom: 12px;
-            border-left: 5px solid #4caf50;
-            cursor: pointer;
-            transition: 0.15s;
-        }
+        .receipt-item { background: #f9fff7; border-radius: 20px; padding: 18px; margin-bottom: 12px; border-left: 5px solid #4caf50; cursor: pointer; transition: 0.15s; }
         .receipt-item:hover { background: #f0fae8; transform: translateX(5px); }
-        .receipt-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
+        .receipt-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 500; }
         .receipt-amount { color: #2d6a2f; font-weight: 700; font-size: 18px; }
-
         .input-group { margin-bottom: 20px; }
-        .input-group input {
-            width: 100%;
-            padding: 16px 20px;
-            border: 1px solid #d0e2c8;
-            border-radius: 60px;
-            font-size: 16px;
-            transition: 0.2s;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: #2d6a2f;
-            box-shadow: 0 0 0 3px rgba(45,106,47,0.1);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: linear-gradient(145deg, #f0f8ec, #e8f3e4);
-            border-radius: 24px;
-            padding: 24px;
-            text-align: center;
-        }
+        .input-group input { width: 100%; padding: 16px 20px; border: 1px solid #d0e2c8; border-radius: 60px; font-size: 16px; transition: 0.2s; }
+        .input-group input:focus { outline: none; border-color: #2d6a2f; box-shadow: 0 0 0 3px rgba(45,106,47,0.1); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card { background: linear-gradient(145deg, #f0f8ec, #e8f3e4); border-radius: 24px; padding: 24px; text-align: center; }
         .stat-value { font-size: 36px; font-weight: 800; color: #2d6a2f; }
-
-        .progress-bar {
-            background: #cde0c5;
-            border-radius: 30px;
-            height: 12px;
-            overflow: hidden;
-            margin: 12px 0;
-        }
+        .progress-bar { background: #cde0c5; border-radius: 30px; height: 12px; overflow: hidden; margin: 12px 0; }
         .progress-fill { background: #2d6a2f; width: 0%; height: 100%; transition: width 0.4s; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 1000; }
         .modal.active { display: flex; }
-        .modal-content {
-            background: white;
-            max-width: 400px;
-            width: 90%;
-            border-radius: 40px;
-            padding: 32px;
-        }
+        .modal-content { background: white; max-width: 400px; width: 90%; border-radius: 40px; padding: 32px; }
         .flex-row { display: flex; justify-content: space-between; margin-bottom: 14px; }
-
-        @media (max-width: 700px) {
-            .app-main { padding: 16px; }
-            .top-panel { flex-direction: column; text-align: center; }
-            .profile-header { flex-direction: column; text-align: center; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .tab-btn { padding: 10px 20px; font-size: 13px; }
-        }
+        @media (max-width: 700px) { .app-main { padding: 16px; } .top-panel { flex-direction: column; text-align: center; } .profile-header { flex-direction: column; text-align: center; } .stats-grid { grid-template-columns: 1fr; } .tab-btn { padding: 10px 20px; font-size: 13px; } }
     </style>
 </head>
 <body>
@@ -328,21 +78,14 @@
         <p>Зарабатывайте на сортировке отходов</p>
         <input type="text" id="loginName" class="auth-input" placeholder="Ваше имя" value="Алексей">
         <input type="email" id="loginEmail" class="auth-input" placeholder="Email" value="aleksey@eco.ru">
-        <button class="auth-btn" onclick="login()">🌱 Войти в профиль</button>
+        <button class="auth-btn" id="loginBtn">🌱 Войти в профиль</button>
     </div>
 </div>
 
 <div id="appMain" class="app-main">
     <div class="top-panel">
-        <div class="logo-area">
-            <span>♻️</span>
-            <h1>EcoTerminal</h1>
-        </div>
-        <div class="balance-badge">
-            <div class="label">Мой баланс</div>
-            <div class="value" id="mainBalance">0</div>
-            <div style="font-size: 10px;">1 балл = 1 ₽</div>
-        </div>
+        <div class="logo-area"><span>♻️</span><h1>EcoTerminal</h1></div>
+        <div class="balance-badge"><div class="label">Мой баланс</div><div class="value" id="mainBalance">0</div><div style="font-size: 10px;">1 балл = 1 ₽</div></div>
     </div>
 
     <div class="tabs-bar">
@@ -378,27 +121,22 @@
     <div id="tab-scanner" class="tab-pane">
         <div class="card">
             <div class="card-title">📷 Сканируйте QR-код с чека</div>
-            <div class="scanner-wrapper">
-                <div id="qr-reader"></div>
-            </div>
+            <div class="scanner-wrapper"><div id="qr-reader"></div></div>
             <button class="btn" id="startScannerBtn">▶ Запустить камеру</button>
             <div style="background: #e8f3e4; border-radius: 20px; padding: 20px; margin-top: 28px;">
                 <div style="font-weight: 700; margin-bottom: 12px;">📌 Как получить баллы:</div>
                 <ul style="margin-left: 20px; line-height: 1.8;">
-                    <li>Сдайте пластик, стекло, бумагу или алюминий в эко-терминал</li>
+                    <li>Сдайте вторсырье в эко-терминал</li>
                     <li>Получите чек с QR-кодом</li>
                     <li>Нажмите «Запустить камеру» и отсканируйте QR</li>
-                    <li>Баллы моментально начислятся на баланс!</li>
+                    <li>Баллы моментально начислятся!</li>
                 </ul>
             </div>
         </div>
     </div>
 
     <div id="tab-receipts" class="tab-pane">
-        <div class="card">
-            <div class="card-title">🧾 История чеков</div>
-            <div id="receiptsList" class="receipts-scroll"><div style="text-align: center; padding: 40px;">Чеков пока нет</div></div>
-        </div>
+        <div class="card"><div class="card-title">🧾 История чеков</div><div id="receiptsList" class="receipts-scroll"><div style="text-align: center; padding: 40px;">Чеков пока нет</div></div></div>
     </div>
 
     <div id="tab-withdraw" class="tab-pane">
@@ -443,7 +181,7 @@
     <div class="modal-content">
         <h3 style="margin-bottom: 20px;">🧾 Детали чека</h3>
         <div id="modalReceiptContent"></div>
-        <button class="btn" onclick="closeModal('receiptModal')" style="margin-top: 24px;">Закрыть</button>
+        <button class="btn" id="closeModalBtn" style="margin-top: 24px;">Закрыть</button>
     </div>
 </div>
 
@@ -451,6 +189,7 @@
     let currentUser = null;
     let appData = { balance: 0, totalEarned: 0, totalWithdrawn: 0, receipts: [] };
     let scanner = null;
+    let isScanning = false;
 
     function login() {
         const name = document.getElementById('loginName').value.trim();
@@ -472,6 +211,20 @@
         updateProfileUI();
         updateAllUI();
         saveData();
+    }
+
+    function logout() {
+        console.log("Выход из аккаунта...");
+        if(scanner && isScanning) { 
+            try { scanner.stop(); } catch(e) {}
+            scanner = null;
+            isScanning = false;
+        }
+        document.getElementById('appMain').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('loginName').value = '';
+        document.getElementById('loginEmail').value = '';
+        currentUser = null;
     }
 
     function saveData() {
@@ -502,11 +255,12 @@
         appData.totalEarned += qrData.amount;
         saveData();
         updateAllUI();
-        alert(`✅ +${qrData.amount} баллов! Материал: ${qrData.material}`);
+        alert(`✅ +${qrData.amount} баллов!\n📦 Материал: ${qrData.material}\n🏭 Терминал: ${qrData.terminal}`);
         
-        if(scanner) {
+        if(scanner && isScanning) {
             scanner.stop().catch(()=>{});
             scanner = null;
+            isScanning = false;
             document.getElementById('qr-reader').innerHTML = '';
         }
     }
@@ -559,10 +313,7 @@
         }
         container.innerHTML = appData.receipts.map(r => `
             <div class="receipt-item" onclick="showReceiptDetail(${r.id})">
-                <div class="receipt-header">
-                    <span>📅 ${r.date.substring(0, 16)}</span>
-                    <span class="receipt-amount">+${r.amount} баллов</span>
-                </div>
+                <div class="receipt-header"><span>📅 ${r.date.substring(0, 16)}</span><span class="receipt-amount">+${r.amount} баллов</span></div>
                 <div style="font-size: 13px;">🏭 ${r.terminal} • 📦 ${r.material} • ⚖️ ${r.weight} кг</div>
             </div>
         `).join('');
@@ -581,16 +332,16 @@
         document.getElementById('receiptModal').classList.add('active');
     }
 
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function closeModal() { document.getElementById('receiptModal').classList.remove('active'); }
 
-    // СКАНЕР
     async function startScanner() {
         const readerElem = document.getElementById('qr-reader');
         if(!readerElem) return;
         
-        if(scanner) {
+        if(scanner && isScanning) {
             try { await scanner.stop(); } catch(e) {}
             scanner = null;
+            isScanning = false;
             readerElem.innerHTML = '';
         }
         
@@ -603,23 +354,19 @@
                 (decodedText) => {
                     console.log("QR отсканирован:", decodedText);
                     try {
-                        let data;
-                        if(decodedText[0] === '{') {
-                            data = JSON.parse(decodedText);
+                        let data = JSON.parse(decodedText);
+                        if(data.amount && data.material && data.terminal) {
+                            addReceipt({ amount: data.amount, material: data.material, terminal: data.terminal });
                         } else {
-                            data = { amount: 50, material: "Вторсырье", terminal: "ECO-TERM" };
+                            alert("Ошибка: неверный формат QR-кода");
                         }
-                        addReceipt({
-                            amount: data.amount || 50,
-                            material: data.material || "Вторсырье",
-                            terminal: data.terminal || "ECO-TERM"
-                        });
                     } catch(e) {
-                        addReceipt({ amount: 50, material: "Вторсырье", terminal: "SCAN" });
+                        alert("Ошибка чтения QR-кода");
                     }
                 },
                 (error) => { console.log("Ошибка сканирования:", error); }
             );
+            isScanning = true;
         } catch(err) {
             console.error("Ошибка запуска камеры:", err);
             alert("Не удалось запустить камеру. Разрешите доступ.");
@@ -640,48 +387,32 @@
         document.getElementById('withdrawSum').value = '';
     }
     
-    function logout() {
-        if(scanner) { 
-            scanner.stop().catch(()=>{}); 
-            scanner = null; 
-        }
-        document.getElementById('appMain').style.display = 'none';
-        document.getElementById('authScreen').style.display = 'flex';
-        // Очищаем поля входа
-        document.getElementById('loginName').value = '';
-        document.getElementById('loginEmail').value = '';
-    }
-    
     function switchTab(tabName) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.getElementById(`tab-${tabName}`).classList.add('active');
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
         if(tabName === 'receipts') renderReceiptsList();
-        if(scanner && tabName !== 'scanner') {
+        if(scanner && isScanning && tabName !== 'scanner') {
             scanner.stop().catch(()=>{});
             scanner = null;
+            isScanning = false;
             document.getElementById('qr-reader').innerHTML = '';
         }
     }
     
-    // ПРАВИЛЬНОЕ ПРИКРЕПЛЕНИЕ ОБРАБОТЧИКОВ
+    // ПОДКЛЮЧАЕМ ОБРАБОТЧИКИ
+    document.getElementById('loginBtn').addEventListener('click', login);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('startScannerBtn').addEventListener('click', startScanner);
+    document.getElementById('withdrawBtn').addEventListener('click', processWithdraw);
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
     });
     
-    const startBtn = document.getElementById('startScannerBtn');
-    if(startBtn) startBtn.addEventListener('click', startScanner);
-    
-    const withdrawBtn = document.getElementById('withdrawBtn');
-    if(withdrawBtn) withdrawBtn.addEventListener('click', processWithdraw);
-    
-    const logoutBtn = document.getElementById('logoutBtn');
-    if(logoutBtn) logoutBtn.addEventListener('click', logout);
-    
     window.showReceiptDetail = showReceiptDetail;
-    window.closeModal = closeModal;
-    window.login = login;
 </script>
 </body>
 </html>
